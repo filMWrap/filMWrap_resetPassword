@@ -10,26 +10,33 @@
 </head>
 <body>
     <h2>Reimposta la tua password</h2>
-    <p>Clicca il pulsante sotto per aprire l'app FilmWrap:</p>
+    <div id="status">Verifica del token in corso...</div>
     <br>
-    <a id="open-app" href="#" class="btn">APRI L'APP</a>
+    <a id="open-app" href="#" class="btn" style="display:none;">APRI L'APP</a>
 
     <script>
+        // 1. Estrazione pulita del token
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token_hash');
-        
-        if (token) {
-            // Costruiamo il link che Supabase capisce nativamente
-            //const deepLink = `filmwrap://auth/confirm?token_hash=${token}&type=recovery`;
-            const deepLink = "https://lnlzugjdjadvbgiqfhbm.supabase.co/auth/v1/verify?token_hash=" + token + "&type=recovery&redirect_to=filmwrap://reset-password";
+        const type = params.get('type') || 'recovery';
 
-            // Impostiamo il link al pulsante
-            document.getElementById('open-app').href = deepLink;
+        if (token) {
+            document.getElementById('status').innerHTML = "Token trovato! Reindirizzamento all'app...";
             
-            // Proviamo ad aprirlo automaticamente dopo 1 secondo
-            setTimeout(() => { window.location.href = deepLink; }, 1000);
+            // 2. Costruzione URL di verifica Supabase
+            // IMPORTANTE: l'ordine dei parametri deve essere esatto
+            const supabaseVerifyUrl = "https://lnlzugjdjadvbgiqfhbm.supabase.co/auth/v1/verify";
+            const finalUrl = `${supabaseVerifyUrl}?token=${token}&type=${type}&redirect_to=filmwrap://reset-password`;
+
+            // 3. Impostiamo il tasto per sicurezza
+            const btn = document.getElementById('open-app');
+            btn.href = finalUrl;
+            btn.style.display = 'inline-block';
+            
+            // 4. Eseguiamo il redirect immediato
+            window.location.href = finalUrl;
         } else {
-            document.body.innerHTML = "<h2>Link non valido o scaduto.</h2>";
+            document.getElementById('status').innerHTML = "<h2 style='color:red;'>Errore: Token non trovato nell'URL.</h2>";
         }
     </script>
 </body>
