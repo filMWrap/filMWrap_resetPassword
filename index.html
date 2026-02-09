@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reindirizzamento App FilmWrap</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    // Prende i parametri dalla query string
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token_hash');
+    const type = params.get('type');
+
+    // Se ci sono parametri, fa redirect all'app
+    if (token && type) {
+      // Redirect al custom scheme dell'app
+      window.location.href = `filmwrap://auth/confirm?token_hash=${token}&type=${type}`;
+
+      // Fallback: mostra messaggio se redirect fallisce
+      setTimeout(() => {
+        document.body.innerHTML = `
+          <h2>Apri l'app FilmWrap</h2>
+          <p>Se l'app non si apre automaticamente, clicca il link sottostante:</p>
+          <p><a href="filmwrap://auth/confirm?token_hash=${token}&type=${type}">Apri App</a></p>
+        `;
+      }, 1500);
+    } else {
+      // Parametri mancanti
+      document.body.innerHTML = `
+        <h2>Link non valido</h2>
+        <p>Controlla di aver cliccato il link corretto nell'email.</p>
+      `;
+    }
+  </script>
+</head>
+<body>
+  <h2>Reindirizzamento...</h2>
+  <p>Se non succede nulla, attendi qualche secondo o clicca il link qui sotto.</p>
+</body>
+</html>
