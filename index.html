@@ -26,7 +26,7 @@
             // 2. Costruzione URL di verifica Supabase
             // IMPORTANTE: l'ordine dei parametri deve essere esatto
             const supabaseVerifyUrl = "https://lnlzugjdjadvbgiqfhbm.supabase.co/auth/v1/verify";
-            const finalUrl = `${supabaseVerifyUrl}?token=${token}&type=${type}&redirect_to=filmwrap://reset-password`;
+            const finalUrl = `${supabaseVerifyUrl}?token=${token}&type=${type}&redirect_to=filmwrap://reset-password&redirect_to_query=true`;
 
             // 3. Impostiamo il tasto per sicurezza
             const btn = document.getElementById('open-app');
