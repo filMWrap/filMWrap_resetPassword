@@ -1,37 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Apri FilmWrap</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script>
-    // Prendi i parametri dalla query string
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token_hash');
-    const type = params.get('type');
-
-    if (token && type) {
-      // Redirect immediato all'app con deep link
-      window.location.href = `filmwrap://auth/confirm?token_hash=${token}&type=${type}`;
-
-      // Fallback: mostra link se il redirect automatico non funziona
-      setTimeout(() => {
-        document.body.innerHTML = `
-          <h2>Apri l'app FilmWrap</h2>
-          <p>Se l'app non si apre automaticamente, clicca qui:</p>
-          <p><a href="filmwrap://auth/confirm?token_hash=${token}&type=${type}">Apri App</a></p>
-        `;
-      }, 1000);
-    } else {
-      document.body.innerHTML = `
-        <h2>Link non valido</h2>
-        <p>Controlla di aver cliccato il link corretto nell'email.</p>
-      `;
-    }
-  </script>
+    <title>Reset Password - FilmWrap</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; padding-top: 50px; }
+        .btn { background: #5E29C7; color: #fff; padding: 15px 30px; border-radius: 8px; text-decoration: none; display: inline-block; font-weight: bold; }
+    </style>
 </head>
 <body>
-  <h2>Caricamento...</h2>
-  <p>Se non succede nulla, attendi qualche secondo.</p>
+    <h2>Reimposta la tua password</h2>
+    <p>Clicca il pulsante sotto per aprire l'app FilmWrap:</p>
+    <br>
+    <a id="open-app" href="#" class="btn">APRI L'APP</a>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token_hash');
+        
+        if (token) {
+            // Costruiamo il link che Supabase capisce nativamente
+            const deepLink = `filmwrap://auth/confirm?token_hash=${token}&type=recovery`;
+            
+            // Impostiamo il link al pulsante
+            document.getElementById('open-app').href = deepLink;
+            
+            // Proviamo ad aprirlo automaticamente dopo 1 secondo
+            setTimeout(() => { window.location.href = deepLink; }, 1000);
+        } else {
+            document.body.innerHTML = "<h2>Link non valido o scaduto.</h2>";
+        }
+    </script>
 </body>
 </html>
