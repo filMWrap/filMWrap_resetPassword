@@ -20,8 +20,9 @@
         
         if (token) {
             // Costruiamo il link che Supabase capisce nativamente
-            const deepLink = `filmwrap://auth/confirm?token_hash=${token}&type=recovery`;
-            
+            //const deepLink = `filmwrap://auth/confirm?token_hash=${token}&type=recovery`;
+            const deepLink = "https://lnlzugjdjadvbgiqfhbm.supabase.co" + token + "&type=recovery&redirect_to=filmwrap://reset-password";
+
             // Impostiamo il link al pulsante
             document.getElementById('open-app').href = deepLink;
             
