@@ -36,36 +36,13 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .btn { 
-            background: white;
-            color: #667eea;
-            padding: 15px 30px; 
-            border-radius: 10px; 
-            text-decoration: none; 
-            display: inline-block; 
-            font-weight: bold;
-            margin-top: 20px;
-            font-size: 16px;
-        }
-        .manual {
-            background: rgba(255,255,255,0.15);
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            font-size: 12px;
-            word-break: break-all;
-            display: none;
-        }
-        .manual.show { display: block; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎬 filMWrap</h1>
         <div class="spinner"></div>
-        <div id="status">Apertura dell'app in corso...</div>
-        <a id="open-app" href="#" class="btn" style="display:none;">Apri l'App</a>
-        <div id="manual" class="manual"></div>
+        <div id="status">Verifica in corso...</div>
     </div>
 
     <script>
@@ -75,45 +52,17 @@
 
         if (!token) {
             document.getElementById('status').innerHTML = 
-                '<h2 style="color:#ff6b6b;">❌ Token mancante</h2><p>Il link non è valido. Richiedi un nuovo link di reset.</p>';
+                '<h2 style="color:#ff6b6b;">❌ Token mancante</h2>';
         } else {
-            // ⭐ COSTRUISCI IL DEEP LINK (NON L'URL SUPABASE!)
-            const deepLink = `filmwrap://auth/confirm?token_hash=${token}&type=${type}`;
-            
             document.getElementById('status').textContent = 
-                'Apertura dell\'app in corso...';
+                'Verifica token e apertura app...';
             
-            const btn = document.getElementById('open-app');
-            btn.href = deepLink;
-            btn.style.display = 'inline-block';
+            // ⭐ USA L'ENDPOINT SUPABASE CHE CREA LA SESSIONE E POI REINDIRIZZA
+            const supabaseUrl = 'https://lnlzugjdjadvbgiqfhbm.supabase.co/auth/v1/verify';
+            const redirectUrl = `${supabaseUrl}?token=${token}&type=${type}&redirect_to=filmwrap://reset-password`;
             
-            // Tentativo 1: iframe (funziona su alcuni Android)
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = deepLink;
-            document.body.appendChild(iframe);
-            
-            // Tentativo 2: window.location (fallback principale)
-            setTimeout(() => {
-                window.location.href = deepLink;
-            }, 500);
-            
-            // Dopo 3 secondi, mostra istruzioni manuali
-            setTimeout(() => {
-                document.getElementById('status').textContent = 
-                    'L\'app non si è aperta automaticamente?';
-                
-                document.getElementById('manual').innerHTML = 
-                    `<p><strong>OPZIONE 1:</strong> Tocca questo link:</p>
-                     <a href="${deepLink}" style="color: white; text-decoration: underline; font-size: 14px;">${deepLink}</a>
-                     <br><br>
-                     <p><strong>OPZIONE 2:</strong> Copia e incolla questo link nel browser:</p>
-                     <code style="background: rgba(0,0,0,0.3); padding: 10px; display: block; margin-top: 10px; border-radius: 5px;">${deepLink}</code>
-                     <br>
-                     <p style="font-size: 11px; opacity: 0.8;">Apri Chrome/Safari, incolla il link e premi Invio. L'app si aprirà automaticamente.</p>`;
-                
-                document.getElementById('manual').classList.add('show');
-            }, 3000);
+            // Reindirizza subito
+            window.location.href = redirectUrl;
         }
     </script>
 </body>
