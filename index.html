@@ -36,15 +36,13 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .error { color: #ff6b6b; margin-top: 20px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎬 filMWrap</h1>
         <div class="spinner"></div>
-        <div id="status">Verifica e apertura app in corso...</div>
-        <div id="error" class="error" style="display:none;"></div>
+        <div id="status">Verifica e apertura app...</div>
     </div>
 
     <script>
@@ -53,22 +51,18 @@
         const type = params.get('type') || 'recovery';
 
         if (!token) {
-            document.getElementById('status').style.display = 'none';
-            document.querySelector('.spinner').style.display = 'none';
-            document.getElementById('error').style.display = 'block';
-            document.getElementById('error').innerHTML = 
-                '<h2>❌ Token mancante</h2><p>Il link non è valido. Richiedi un nuovo link di reset.</p>';
+            document.getElementById('status').innerHTML = 
+                '<h2 style="color:#ff6b6b;">❌ Token mancante</h2>';
         } else {
-            // ⭐ USA L'ENDPOINT SUPABASE CHE CREA SESSIONE PERMANENTE
+            // ⭐ REINDIRIZZA A SUPABASE CHE POI APRE L'APP
             const supabaseUrl = 'https://lnlzugjdjadvbgiqfhbm.supabase.co/auth/v1/verify';
             
-            // ⭐ IMPORTANTE: redirect_to deve essere filmwrap://reset-password (senza params)
-            const verifyUrl = `${supabaseUrl}?token=${encodeURIComponent(token)}&type=${type}&redirect_to=${encodeURIComponent('filmwrap://reset-password')}`;
+            // ⭐ IMPORTANTE: NON passare token_hash al deep link
+            // Supabase gestirà tutto e aprirà l'app con sessione attiva
+            const redirectUrl = `${supabaseUrl}?token=${encodeURIComponent(token)}&type=${type}&redirect_to=${encodeURIComponent('filmwrap://reset-password')}`;
             
-            console.log('🔗 Reindirizzamento a:', verifyUrl);
-            
-            // Reindirizza immediatamente
-            window.location.href = verifyUrl;
+            // Reindirizza subito
+            window.location.href = redirectUrl;
         }
     </script>
 </body>
