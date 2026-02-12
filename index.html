@@ -1,42 +1,119 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
-    <title>Reset Password - FilmWrap</title>
+    <meta charset="UTF-8">
+    <title>Reset Password - filMWrap</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; padding-top: 50px; }
-        .btn { background: #5E29C7; color: #fff; padding: 15px 30px; border-radius: 8px; text-decoration: none; display: inline-block; font-weight: bold; }
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            text-align: center; 
+            padding: 50px 20px;
+            margin: 0;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            margin: 0 auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        h1 { margin-bottom: 20px; font-size: 28px; }
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .btn { 
+            background: white;
+            color: #667eea;
+            padding: 15px 30px; 
+            border-radius: 10px; 
+            text-decoration: none; 
+            display: inline-block; 
+            font-weight: bold;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        .manual {
+            background: rgba(255,255,255,0.15);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 12px;
+            word-break: break-all;
+            display: none;
+        }
+        .manual.show { display: block; }
     </style>
 </head>
 <body>
-    <h2>Reimposta la tua password</h2>
-    <div id="status">Verifica del token in corso...</div>
-    <br>
-    <a id="open-app" href="#" class="btn" style="display:none;">APRI L'APP</a>
+    <div class="container">
+        <h1>🎬 filMWrap</h1>
+        <div class="spinner"></div>
+        <div id="status">Apertura dell'app in corso...</div>
+        <a id="open-app" href="#" class="btn" style="display:none;">Apri l'App</a>
+        <div id="manual" class="manual"></div>
+    </div>
 
     <script>
-        // 1. Estrazione pulita del token
         const params = new URLSearchParams(window.location.search);
-        const token = params.get('token_hash');
+        const token = params.get('token_hash') || params.get('token');
         const type = params.get('type') || 'recovery';
 
-        if (token) {
-            document.getElementById('status').innerHTML = "Token trovato! Reindirizzamento all'app...";
+        if (!token) {
+            document.getElementById('status').innerHTML = 
+                '<h2 style="color:#ff6b6b;">❌ Token mancante</h2><p>Il link non è valido. Richiedi un nuovo link di reset.</p>';
+        } else {
+            // ⭐ COSTRUISCI IL DEEP LINK (NON L'URL SUPABASE!)
+            const deepLink = `filmwrap://auth/confirm?token_hash=${token}&type=${type}`;
             
-            // 2. Costruzione URL di verifica Supabase
-            // IMPORTANTE: l'ordine dei parametri deve essere esatto
-            const supabaseVerifyUrl = "https://lnlzugjdjadvbgiqfhbm.supabase.co/auth/v1/verify";
-            const finalUrl = `${supabaseVerifyUrl}?token=${token}&type=${type}&redirect_to=filmwrap://reset-password&redirect_to_query=true`;
-
-            // 3. Impostiamo il tasto per sicurezza
+            document.getElementById('status').textContent = 
+                'Apertura dell\'app in corso...';
+            
             const btn = document.getElementById('open-app');
-            btn.href = finalUrl;
+            btn.href = deepLink;
             btn.style.display = 'inline-block';
             
-            // 4. Eseguiamo il redirect immediato
-            window.location.href = finalUrl;
-        } else {
-            document.getElementById('status').innerHTML = "<h2 style='color:red;'>Errore: Token non trovato nell'URL.</h2>";
+            // Tentativo 1: iframe (funziona su alcuni Android)
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = deepLink;
+            document.body.appendChild(iframe);
+            
+            // Tentativo 2: window.location (fallback principale)
+            setTimeout(() => {
+                window.location.href = deepLink;
+            }, 500);
+            
+            // Dopo 3 secondi, mostra istruzioni manuali
+            setTimeout(() => {
+                document.getElementById('status').textContent = 
+                    'L\'app non si è aperta automaticamente?';
+                
+                document.getElementById('manual').innerHTML = 
+                    `<p><strong>OPZIONE 1:</strong> Tocca questo link:</p>
+                     <a href="${deepLink}" style="color: white; text-decoration: underline; font-size: 14px;">${deepLink}</a>
+                     <br><br>
+                     <p><strong>OPZIONE 2:</strong> Copia e incolla questo link nel browser:</p>
+                     <code style="background: rgba(0,0,0,0.3); padding: 10px; display: block; margin-top: 10px; border-radius: 5px;">${deepLink}</code>
+                     <br>
+                     <p style="font-size: 11px; opacity: 0.8;">Apri Chrome/Safari, incolla il link e premi Invio. L'app si aprirà automaticamente.</p>`;
+                
+                document.getElementById('manual').classList.add('show');
+            }, 3000);
         }
     </script>
 </body>
