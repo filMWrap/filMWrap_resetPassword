@@ -42,33 +42,24 @@
     <div class="container">
         <h1>🎬 filMWrap</h1>
         <div class="spinner"></div>
-        <div id="status">Verifica e apertura app...</div>
+        <div id="status">Apertura app in corso...</div>
     </div>
 
     <script>
         const params = new URLSearchParams(window.location.search);
-        const token = params.get('token_hash') || params.get('token');
+        const token = params.get('token'); // ora usiamo solo .Token
         const type = params.get('type') || 'recovery';
 
         if (!token) {
             document.getElementById('status').innerHTML = 
-                '<h2 style="color:#ff6b6b;">❌ Token mancante</h2><p>Il link non è valido.</p>';
+                '<h2 style="color:#ff6b6b;">❌ Token mancante</h2><p>Il link non è valido o è scaduto.</p>';
         } else {
-            const params = new URLSearchParams(window.location.search);
-const token = params.get('token_hash');
-const type = params.get('type');
+            const appUrl = `filmwrap://auth/confirm?token_hash=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`;
+            
+            console.log('🔗 Redirect diretto all\'app:', appUrl);
 
-if (!token) {
-    document.getElementById('status').innerHTML = 
-        '<h2 style="color:#ff6b6b;">❌ Token mancante</h2><p>Il link non è valido.</p>';
-} else {
-    const appUrl = `filmwrap://auth/confirm?token_hash=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`;
-    
-    console.log('🔗 Redirect diretto all\'app:', appUrl);
-    
-    window.location.href = appUrl;
-}
-
+            // Redirect diretto all'app SENZA passare da Supabase verify
+            window.location.href = appUrl;
         }
     </script>
 </body>
