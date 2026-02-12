@@ -52,16 +52,15 @@
 
         if (!token) {
             document.getElementById('status').innerHTML = 
-                '<h2 style="color:#ff6b6b;">❌ Token mancante</h2>';
+                '<h2 style="color:#ff6b6b;">❌ Token mancante</h2><p>Il link non è valido. Richiedi un nuovo link di reset.</p>';
         } else {
-            // ⭐ REINDIRIZZA A SUPABASE CHE POI APRE L'APP
+            // ⭐ REINDIRIZZA A SUPABASE CHE CREA SESSIONE E APRE APP
             const supabaseUrl = 'https://lnlzugjdjadvbgiqfhbm.supabase.co/auth/v1/verify';
-            
-            // ⭐ IMPORTANTE: NON passare token_hash al deep link
-            // Supabase gestirà tutto e aprirà l'app con sessione attiva
             const redirectUrl = `${supabaseUrl}?token=${encodeURIComponent(token)}&type=${type}&redirect_to=${encodeURIComponent('filmwrap://reset-password')}`;
             
-            // Reindirizza subito
+            console.log('🔗 Redirect:', redirectUrl);
+            
+            // Reindirizza immediatamente
             window.location.href = redirectUrl;
         }
     </script>
