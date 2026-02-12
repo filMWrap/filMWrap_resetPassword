@@ -54,16 +54,21 @@
             document.getElementById('status').innerHTML = 
                 '<h2 style="color:#ff6b6b;">❌ Token mancante</h2><p>Il link non è valido.</p>';
         } else {
-            // ⭐ USA ENDPOINT SUPABASE CHE CREA SESSIONE PERMANENTE
-            const supabaseUrl = 'https://lnlzugjdjadvbgiqfhbm.supabase.co/auth/v1/verify';
-            
-            // ⭐ IMPORTANTE: redirect_to=filmwrap://reset-password (SENZA parametri!)
-            const redirectUrl = `${supabaseUrl}?token=${encodeURIComponent(token)}&type=${type}&redirect_to=${encodeURIComponent('filmwrap://reset-password')}`;
-            
-            console.log('🔗 Redirect a Supabase:', redirectUrl);
-            
-            // Reindirizza immediatamente
-            window.location.href = redirectUrl;
+            const params = new URLSearchParams(window.location.search);
+const token = params.get('token_hash');
+const type = params.get('type');
+
+if (!token) {
+    document.getElementById('status').innerHTML = 
+        '<h2 style="color:#ff6b6b;">❌ Token mancante</h2><p>Il link non è valido.</p>';
+} else {
+    const appUrl = `filmwrap://auth/confirm?token_hash=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`;
+    
+    console.log('🔗 Redirect diretto all\'app:', appUrl);
+    
+    window.location.href = appUrl;
+}
+
         }
     </script>
 </body>
