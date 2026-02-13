@@ -29,31 +29,32 @@
     const supabaseUrl = "https://lnlzugjdjadvbgiqfhbm.supabase.co";
     const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxubHp1Z2pkamFkdmJnaXFmaGJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzNjE3MTUsImV4cCI6MjA4MTkzNzcxNX0.XNxo2BMaJGj19rX5u3GAP0IXJ6QwSIJVsVEzrX0KUUo";
 
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+  const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const token_hash = urlParams.get("token_hash"); // ✅ CORRETTO
-  const type = urlParams.get("type");
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  const access_token = hashParams.get("access_token");
+  const refresh_token = hashParams.get("refresh_token");
+  const type = hashParams.get("type");
 
   const passwordInput = document.getElementById("password");
   const confirmInput = document.getElementById("confirmPassword");
   const btn = document.getElementById("resetBtn");
   const message = document.getElementById("message");
 
-  async function activateSession() {
-    if (!token_hash || type !== "recovery") {
+  async function setRecoverySession() {
+    if (!access_token || !refresh_token) {
       message.textContent = "Link non valido o scaduto.";
       btn.disabled = true;
       return false;
     }
 
-    const { error } = await supabase.auth.verifyOtp({
-      token_hash,
-      type: "recovery",
+    const { error } = await supabase.auth.setSession({
+      access_token,
+      refresh_token,
     });
 
     if (error) {
-      message.textContent = "Link scaduto o già utilizzato.";
+      message.textContent = "Sessione non valida o scaduta.";
       btn.disabled = true;
       return false;
     }
@@ -61,7 +62,7 @@
     return true;
   }
 
-  activateSession();
+  setRecoverySession();
 
   btn.addEventListener("click", async () => {
     const password = passwordInput.value;
@@ -93,6 +94,7 @@
     message.textContent = "✅ Password aggiornata con successo!";
   });
 </script>
+
 
 </body>
 </html>
