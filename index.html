@@ -29,52 +29,70 @@
     const supabaseUrl = "https://lnlzugjdjadvbgiqfhbm.supabase.co";
     const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxubHp1Z2pkamFkdmJnaXFmaGJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzNjE3MTUsImV4cCI6MjA4MTkzNzcxNX0.XNxo2BMaJGj19rX5u3GAP0IXJ6QwSIJVsVEzrX0KUUo";
 
-    const supabase = Supabase.createClient(supabaseUrl, supabaseAnonKey);
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const token_hash = urlParams.get("token"); // Supabase manda ?token=xxx
-    const type = urlParams.get("type"); // dovrebbe essere 'recovery'
+  const urlParams = new URLSearchParams(window.location.search);
+  const token_hash = urlParams.get("token_hash"); // ✅ CORRETTO
+  const type = urlParams.get("type");
 
-    const passwordInput = document.getElementById("password");
-    const confirmInput = document.getElementById("confirmPassword");
-    const btn = document.getElementById("resetBtn");
-    const message = document.getElementById("message");
+  const passwordInput = document.getElementById("password");
+  const confirmInput = document.getElementById("confirmPassword");
+  const btn = document.getElementById("resetBtn");
+  const message = document.getElementById("message");
 
+  async function activateSession() {
     if (!token_hash || type !== "recovery") {
-      message.textContent = "Link non valido o scaduto. Richiedi un nuovo reset.";
+      message.textContent = "Link non valido o scaduto.";
       btn.disabled = true;
+      return false;
     }
 
-    btn.addEventListener("click", async () => {
-      const password = passwordInput.value;
-      const confirm = confirmInput.value;
-
-      if (!password || !confirm) {
-        message.textContent = "Compila entrambi i campi.";
-        return;
-      }
-      if (password !== confirm) {
-        message.textContent = "Le password non corrispondono.";
-        return;
-      }
-      btn.disabled = true;
-      message.textContent = "Aggiornamento password in corso...";
-
-      try {
-        const { error } = await supabase.auth.updateUser({
-          password: password,
-          // token_hash serve se vogliamo verificare direttamente il recovery
-          // supabase-js >=2 gestisce recovery automaticamente con token dalla URL
-        });
-
-        if (error) throw error;
-
-        message.textContent = "✅ Password cambiata con successo!";
-      } catch (err) {
-        message.textContent = "❌ Errore: " + err.message;
-        btn.disabled = false;
-      }
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash,
+      type: "recovery",
     });
-  </script>
+
+    if (error) {
+      message.textContent = "Link scaduto o già utilizzato.";
+      btn.disabled = true;
+      return false;
+    }
+
+    return true;
+  }
+
+  activateSession();
+
+  btn.addEventListener("click", async () => {
+    const password = passwordInput.value;
+    const confirm = confirmInput.value;
+
+    if (!password || !confirm) {
+      message.textContent = "Compila entrambi i campi.";
+      return;
+    }
+
+    if (password !== confirm) {
+      message.textContent = "Le password non corrispondono.";
+      return;
+    }
+
+    btn.disabled = true;
+    message.textContent = "Aggiornamento password...";
+
+    const { error } = await supabase.auth.updateUser({
+      password: password,
+    });
+
+    if (error) {
+      message.textContent = "Errore: " + error.message;
+      btn.disabled = false;
+      return;
+    }
+
+    message.textContent = "✅ Password aggiornata con successo!";
+  });
+</script>
+
 </body>
 </html>
