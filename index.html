@@ -36,137 +36,38 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .manual {
-            background: rgba(255,255,255,0.15);
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-            display: none;
-        }
-        .manual.show { display: block; }
-        .btn {
-            background: white;
-            color: #667eea;
-            padding: 15px 30px;
-            border-radius: 10px;
-            text-decoration: none;
-            display: inline-block;
-            font-weight: bold;
-            margin-top: 15px;
-            font-size: 16px;
-        }
-        .link-box {
-            background: rgba(0,0,0,0.3);
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-            word-break: break-all;
-            font-size: 12px;
-            font-family: monospace;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎬 filMWrap</h1>
-        <div class="spinner" id="spinner"></div>
+        <div class="spinner"></div>
         <div id="status">Verifica e apertura app...</div>
-        <div id="manual" class="manual">
-            <p><strong>L'app non si è aperta?</strong></p>
-            <p>Tocca il pulsante qui sotto:</p>
-            <a id="manual-link" href="#" class="btn">Apri l'App</a>
-            <p style="margin-top: 20px; font-size: 14px; opacity: 0.8;">Oppure copia questo link e incollalo nel browser:</p>
-            <div id="deep-link-box" class="link-box"></div>
-        </div>
     </div>
 
     <script>
-        console.log('🔗 URL ricevuto:', window.location.href);
-        
-        // Leggi parametri dall'URL (query string)
+        // Leggi parametri dall'URL
         const params = new URLSearchParams(window.location.search);
-        let token = params.get('token_hash') || params.get('token');
-        let type = params.get('type') || 'recovery';
+        const token = params.get('token_hash') || params.get('token');
+        const type = params.get('type') || 'recovery';
 
-        // Leggi anche da hash (se Supabase reindirizza con #)
-        if (!token) {
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
-            token = hashParams.get('token_hash') || hashParams.get('access_token');
-            type = hashParams.get('type') || 'recovery';
-            console.log('🔑 Token dal hash:', token);
-        }
-
-        console.log('🔑 Token trovato:', token);
-        console.log('📋 Type:', type);
+        console.log('🔑 Token:', token);
 
         if (!token) {
-            document.getElementById('spinner').style.display = 'none';
             document.getElementById('status').innerHTML = 
-                '<h2 style="color:#ff6b6b;">❌ Token mancante</h2><p>Il link non è valido o è scaduto.</p><p style="font-size: 12px; margin-top: 20px;">Richiedi un nuovo link di reset dalla app.</p>';
+                '<h2 style="color:#ff6b6b;">❌ Token mancante</h2>';
         } else {
-            // ⭐ METODO 1: Usa endpoint Supabase per verificare e creare sessione
+            // ⭐ USA ENDPOINT SUPABASE
             const supabaseUrl = 'https://lnlzugjdjadvbgiqfhbm.supabase.co/auth/v1/verify';
-            const verifyUrl = `${supabaseUrl}?token=${encodeURIComponent(token)}&type=${type}&redirect_to=${encodeURIComponent('filmwrap://reset-password')}`;
             
-            console.log('🔗 URL Supabase:', verifyUrl);
-
-            // ⭐ METODO 2: Deep link diretto (fallback)
-            const deepLink = `filmwrap://auth/confirm?token_hash=${encodeURIComponent(token)}&type=${type}`;
+            // ⭐ IMPORTANTE: redirect_to con parametri nel FRAGMENT (#)
+            const deepLink = `filmwrap://auth/confirm`;
+            const redirectUrl = `${supabaseUrl}?token=${encodeURIComponent(token)}&type=${type}&redirect_to=${encodeURIComponent(deepLink)}`;
             
-            console.log('🔗 Deep link:', deepLink);
-
-            // Tenta prima con endpoint Supabase
-            let redirected = false;
-
-            // Tentativo 1: iframe
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = verifyUrl;
-            document.body.appendChild(iframe);
-
-            // Tentativo 2: window.location dopo 1 secondo
-            setTimeout(() => {
-                if (!redirected) {
-                    console.log('🔄 Tentativo redirect con window.location');
-                    window.location.href = verifyUrl;
-                    redirected = true;
-                }
-            }, 1000);
-
-            // Dopo 3 secondi, mostra opzioni manuali
-            setTimeout(() => {
-                document.getElementById('status').textContent = 
-                    'Attendi...';
-            }, 2000);
-
-            // Dopo 5 secondi, mostra pulsante manuale
-            setTimeout(() => {
-                document.getElementById('spinner').style.display = 'none';
-                document.getElementById('status').textContent = 
-                    'L\'app non si è aperta automaticamente?';
-                
-                // Imposta link manuale
-                document.getElementById('manual-link').href = deepLink;
-                document.getElementById('deep-link-box').textContent = deepLink;
-                document.getElementById('manual').classList.add('show');
-
-                // Aggiungi evento click per tentare di nuovo
-                document.getElementById('manual-link').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    console.log('🔄 Click manuale su:', deepLink);
-                    
-                    // Tenta ancora con iframe
-                    const manualIframe = document.createElement('iframe');
-                    manualIframe.style.display = 'none';
-                    manualIframe.src = deepLink;
-                    document.body.appendChild(manualIframe);
-                    
-                    // E con window.location
-                    setTimeout(() => {
-                        window.location.href = deepLink;
-                    }, 500);
-                });
-            }, 5000);
+            console.log('🔗 Redirect:', redirectUrl);
+            
+            // Reindirizza
+            window.location.href = redirectUrl;
         }
     </script>
 </body>
