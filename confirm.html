@@ -58,7 +58,8 @@
         } else {
             // ⭐ CONFERMA EMAIL CON ENDPOINT SUPABASE
             const supabaseUrl = 'https://lnlzugjdjadvbgiqfhbm.supabase.co/auth/v1/verify';
-            const deepLink = `filmwrap://auth/confirm`;
+            //const deepLink = `filmwrap://auth/confirm`;
+            const deepLink = type === 'signup' ? 'filmwrap://login' : 'filmwrap://auth/confirm';
             const redirectUrl = `${supabaseUrl}?token=${encodeURIComponent(token)}&type=${type}&redirect_to=${encodeURIComponent(deepLink)}`;
             
             console.log('🔗 Redirect:', redirectUrl);
